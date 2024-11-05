@@ -78,3 +78,12 @@ def update_task(id:int, u_task:TasksUpdate,session:SessionDep):
     session.commit()
     session.refresh(task_db)
     return task_db
+
+@app.delete('/tasks/{id}')
+def delete_task(id:int,session:SessionDep):
+    task = session.get(TasksBase,id)
+    if not task:
+        raise HTTPException(status_code=404, detail="There is no such task")
+    session.delete(task)
+    session.commit()
+    return {"data":"Task is deleted"}
