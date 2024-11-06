@@ -45,10 +45,12 @@ def get_by_date(date: date, session: SessionDep):
 
 @app.get('/tasks')
 def get_tasks(session:SessionDep,
-              priority:bool=Query(False), 
-              completed:bool=Query(None),
-              keyword:str=Query(None),
-              date: date=Query(None)):
+              priority:bool=Query(default=False), 
+              completed:bool=Query(default=None),
+              keyword:str=Query(default=None),
+              date: date=Query(default=None),
+              offset:int=Query(default=0),
+              limit:int=Query(default=100)):
     query = select(TasksBase)
     
     if date:
@@ -62,6 +64,7 @@ def get_tasks(session:SessionDep,
         query = query.order_by(desc(TasksBase.priority))
     if keyword:
         query = query.where(or_(TasksBase.description.like(f"%{keyword}%"),TasksBase.title.like(f"%{keyword}%")))
+    query = query.offset(offset).limit(limit)
     tasks = session.exec(query).all()
     return tasks
     
