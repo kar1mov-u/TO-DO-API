@@ -24,10 +24,18 @@ class UserBase(SQLModel):
     username: str =Field(nullable=False,unique=True)
     email: EmailStr = Field(unique=True)
     password: str = Field(nullable=False)
+    
+class UserDB(UserBase,table=True):
+    id: int | None= Field(default=None,primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
-class UserDB(SQLModel,table=True):
-    id: int | None= Field(default=None,primary_key=True)
+class UserResponse(SQLModel):
+    id: int
+    username:str
+    email: str
+    created_at: datetime
+    password: str
+    
     
 
 
