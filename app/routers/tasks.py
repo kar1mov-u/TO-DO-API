@@ -6,7 +6,7 @@ from sqlmodel import select,desc,or_
 
 router = APIRouter()
 
-@router.post("/create")
+@router.post("/tasks/create")
 def create_task(task:TasksBase,session:SessionDep):
     task_db =TasksDB(**task.model_dump())
     session.add(task_db)
