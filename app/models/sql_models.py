@@ -29,12 +29,19 @@ class UserDB(UserBase,table=True):
     id: int | None= Field(default=None,primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
+class UserLogin(SQLModel):
+    email: EmailStr
+    password: str
+    
+    
 class UserResponse(SQLModel):
     id: int
     username:str
     email: str
     created_at: datetime
     password: str
+    
+
     
     
 
