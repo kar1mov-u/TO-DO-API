@@ -17,3 +17,10 @@ def authenticate_user(session,email,password):
     if not verify_pass(user.password,password):
         return False
     return user
+
+def get_current_user_object(session,email):
+    user =session.exec(select(UserDB).where(UserDB.email==email)).first()
+    if not user:
+        return False
+    return user
+    

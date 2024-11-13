@@ -1,7 +1,9 @@
-from sqlmodel import SQLModel,Field
+from sqlmodel import SQLModel,Field,Relationship
 from pydantic import EmailStr
 from typing import Optional
 from datetime import datetime
+from typing import Optional, List
+
 
 class TasksBase(SQLModel):
     title: str =Field(index=True)
@@ -11,7 +13,10 @@ class TasksBase(SQLModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)  
 
 class TasksDB(TasksBase,table =True):
+    __tablename__="tasks"
     id: int | None = Field(default=None,primary_key=True)
+    user_id: int = Field(foreign_key="users.id",nullable=False)
+    user: Optional["UserDB"] = Relationship(back_populates="tasks")
     
 class TasksUpdate(SQLModel):
     title: Optional[str]    = None
@@ -26,8 +31,10 @@ class UserBase(SQLModel):
     password: str = Field(nullable=False)
     
 class UserDB(UserBase,table=True):
+    __tablename__ = "users"
     id: int | None= Field(default=None,primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    tasks : List["TasksDB"] = Relationship(back_populates="user")
     
 class UserLogin(SQLModel):
     email: EmailStr
@@ -37,7 +44,7 @@ class UserLogin(SQLModel):
 class UserResponse(SQLModel):
     id: int
     username:str
-    email: str
+    email: str  
     created_at: datetime
     password: str
     
