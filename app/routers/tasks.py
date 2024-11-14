@@ -2,7 +2,7 @@ from fastapi import HTTPException,APIRouter,Query,Depends
 from datetime import datetime,date
 from ..database import SessionDep
 from ..auth import get_current_user
-from ..utils import get_current_user_object
+from ..utils import get_current_user_object,validate_user_to_task
 from ..models.sql_models import TasksBase,TasksUpdate,TasksDB
 from sqlmodel import select,desc,or_
 
@@ -11,8 +11,6 @@ router = APIRouter()
 @router.post("/tasks/create")
 def create_task(task:TasksBase,session:SessionDep, user:str=Depends(get_current_user)):
     user_db = get_current_user_object(session,user)
-    if not user_db:
-        raise HTTPException(status_code=403,detail="User is not valid")
     task_db =TasksDB(**task.model_dump())
     task_db.user = user_db
     session.add(task_db)
@@ -23,8 +21,6 @@ def create_task(task:TasksBase,session:SessionDep, user:str=Depends(get_current_
 @router.get('/tasks/{id}')
 def get_task(id:int, session:SessionDep,user:str=Depends(get_current_user)):
     user_db = get_current_user_object(session,user)
-    if not user_db:
-        raise HTTPException(status_code=403,detail="User is not valid")
     task = session.get(TasksDB,id)
     if not task:
         raise HTTPException(status_code=404, detail="The task is not avaiable")    
@@ -55,8 +51,6 @@ def get_tasks(session:SessionDep,
               limit:int=Query(default=100)):
     
     user_db = get_current_user_object(session,user)
-    if not user_db:
-        raise HTTPException(status_code=403, detail="User is not valid")
     query = select(TasksDB)
     query = query.where(TasksDB.user_id==user_db.id)
     
@@ -79,14 +73,12 @@ def get_tasks(session:SessionDep,
 @router.patch("/tasks/{id}")
 def update_task(id:int, u_task:TasksUpdate,session:SessionDep,user:str=Depends(get_current_user)):
     user_db = get_current_user_object(session,user)
-    if not user_db:
-        raise HTTPException(status_code=403, detail="User is not valid")
+
 
     task_db = session.get(TasksDB,id)    
     if not task_db:
         raise HTTPException(status_code=404, detail="There is no such post")
-    if task_db.user_id!=user_db.id:
-        raise HTTPException(status_code=404, detail="THis task does not belong to you")
+    validate_user_to_task(user_db.id, task_db.user_id)
         
     task_data = u_task.model_dump(exclude_unset=True)
     for key,value in task_data.items():
@@ -100,8 +92,7 @@ def update_task(id:int, u_task:TasksUpdate,session:SessionDep,user:str=Depends(g
 
 def delete_task(id:int,session:SessionDep,user:str=Depends(get_current_user)):
     user_db = get_current_user_object(session,user)
-    if not user_db:
-        raise HTTPException(status_code=403, detail="User is not valid")
+
     task = session.get(TasksDB,id)
     if not task:
         raise HTTPException(status_code=404, detail="There is no such task")

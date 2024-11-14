@@ -1,4 +1,5 @@
 from passlib.context import CryptContext
+from fastapi import HTTPException
 from .database import SessionDep
 from sqlmodel import select
 from .models.sql_models import UserDB
@@ -21,6 +22,11 @@ def authenticate_user(session,email,password):
 def get_current_user_object(session,email):
     user =session.exec(select(UserDB).where(UserDB.email==email)).first()
     if not user:
-        return False
+        raise HTTPException(status_code=403, detail="Invalid user")
     return user
+
+def validate_user_to_task(user_id, task_user_id):
+    if user_id!=task_user_id:
+        raise HTTPException(status_code=404, detail="THis task does not belong to you")
+    
     
