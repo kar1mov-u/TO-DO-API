@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi.security import OAuth2AuthorizationCodeBearer,OAuth2PasswordRequestForm
 from ..auth import ACCESS_TOKEN_EXPIRE_MINUTES,create_access_token,Token,get_current_user
 from sqlmodel import select
-router = APIRouter()
+router = APIRouter(tags=["Users"])
 
 @router.post('/users/create',response_model=UserResponse)
 def craete_user(user:UserBase,session:SessionDep):

@@ -48,6 +48,16 @@ class UserResponse(SQLModel):
     created_at: datetime
     password: str
     
+class ActivityDB(SQLModel,table=True):
+    id: int | None=Field(default=None,primary_key=True)
+    time: datetime=Field(default_factory=datetime.utcnow)
+    task_id: int = Field(foreign_key="tasks.id",nullable=True)
+    user_id: int = Field(foreign_key="users.id", nullable=False)
+    message: str = Field(nullable=False)
+    user: "UserDB" = Relationship(back_populates="activities")  
+    task: Optional["TasksDB"] = Relationship(back_populates="activities")  
+    
+    
 
     
     

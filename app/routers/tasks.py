@@ -6,7 +6,7 @@ from ..utils import get_current_user_object,validate_user_to_task
 from ..models.sql_models import TasksBase,TasksUpdate,TasksDB
 from sqlmodel import select,desc,or_
 
-router = APIRouter()
+router = APIRouter(tags=["Tasks"])
 
 @router.post("/tasks/create")
 def create_task(task:TasksBase,session:SessionDep, user:str=Depends(get_current_user)):
