@@ -2,7 +2,7 @@ from fastapi import HTTPException,APIRouter,Query,Depends
 from datetime import datetime,date
 from ..database import SessionDep
 from ..auth import get_current_user
-from ..utils import get_current_user_object,validate_user_to_task
+from ..utils import get_current_user_object,validate_user_to_task,log_activity
 from ..models.sql_models import TasksBase,TasksUpdate,TasksDB
 from sqlmodel import select,desc,or_
 
@@ -15,7 +15,9 @@ def create_task(task:TasksBase,session:SessionDep, user:str=Depends(get_current_
     task_db.user = user_db
     session.add(task_db)
     session.commit()
+    log_activity(session,user_db.id,  "Created the task",task_id=task_db.id)
     session.refresh(task_db)    
+
     return task_db
 
 @router.get('/tasks/{id}')
@@ -24,8 +26,7 @@ def get_task(id:int, session:SessionDep,user:str=Depends(get_current_user)):
     task = session.get(TasksDB,id)
     if not task:
         raise HTTPException(status_code=404, detail="The task is not avaiable")    
-    if task.user_id!=user_db.id:
-        raise HTTPException(status_code=404, detail="THis task does not belong to you")
+    validate_user_to_task(user_db.id, task.user_id)
     return task
 
 
@@ -86,6 +87,7 @@ def update_task(id:int, u_task:TasksUpdate,session:SessionDep,user:str=Depends(g
     session.add(task_db)
     session.commit()
     session.refresh(task_db)
+    log_activity(session,user_db.id,  "Updated the task",task_id=task_db.id)
     return task_db
 
 @router.delete('/tasks/{id}')
@@ -96,8 +98,10 @@ def delete_task(id:int,session:SessionDep,user:str=Depends(get_current_user)):
     task = session.get(TasksDB,id)
     if not task:
         raise HTTPException(status_code=404, detail="There is no such task")
-    if task.user_id!=user_db.id:
-        raise HTTPException(status_code=404, detail="THis task does not belong to you")
+    validate_user_to_task(user_db.id, task.user_id)
+
     session.delete(task)
     session.commit()
+    log_activity(session,user_db.id,"Deleted the task", task_id=task.id)
+    
     return {"data":"Task is deleted"}

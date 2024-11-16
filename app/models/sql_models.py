@@ -35,6 +35,7 @@ class UserDB(UserBase,table=True):
     id: int | None= Field(default=None,primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     tasks : List["TasksDB"] = Relationship(back_populates="user")
+    # activities: List["ActivityDB"] = Relationship(back_populates="user")
     
 class UserLogin(SQLModel):
     email: EmailStr
@@ -54,8 +55,8 @@ class ActivityDB(SQLModel,table=True):
     task_id: int = Field(foreign_key="tasks.id",nullable=True)
     user_id: int = Field(foreign_key="users.id", nullable=False)
     message: str = Field(nullable=False)
-    user: "UserDB" = Relationship(back_populates="activities")  
-    task: Optional["TasksDB"] = Relationship(back_populates="activities")  
+    # user: "UserDB" = Relationship(back_populates="activities")  
+    # task: Optional["TasksDB"] = Relationship(back_populates="activities")  
     
     
 
